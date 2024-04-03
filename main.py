@@ -19,17 +19,28 @@ class SoftwareRender:
         self.projection = Projection(self)
         self.object = Object3D(self) 
         self.object.translate([0.2, 0.4, 0.2])
-        self.object.rotate_y(math.pi / 6)
+        #self.object.rotate_y(math.pi / 6)(changed the command)
+        self.axes = Axes(self)   
+        self.axes.translate([0.7, 0.9, 0.7])
+        self.world_exes = Axes(self)  
+        self.world_exes.movement_flag = False     
+        self.world_exes.scale(2.5)
+        self.world_exes.translate([0.0001, 0.0001, 0.0001])    
           
        
     
     def draw(self):
         self.screen.fill(pg.Color('darkslategray')) 
-        self.object.draw()   
+        self.world_exes.draw()   
+        self.axes.draw()
+        self.object.draw()
+         
+   
         
     def run(self):
         while True:
             self.draw()
+            self.camera.control()#Trabalhando com a movimentação da imagem.
             [exit()for i in pg.event.get() if i.type == pg.QUIT]
             pg.display.set_caption(str(self.clock.get_fps()))
             pg.display.flip()
