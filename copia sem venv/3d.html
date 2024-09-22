@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imagem 3D</title>
+    <link rel="stylesheet" href="../index.css">
+</head>
+<body>
+
+    
+    <div id="secao1" class="botao">
+        <a href="file:///home/luciano/Documentos/repositorios-github/3D-Image/copia%20sem%20venv/" class="site"
+            target="_blank"><button>Pasta pai</button></a>
+    
+        <a href="https://www.pygame.org/wiki/Compilation" class="site" name="Site do pygame"
+            target="_blank"><button>pygame</button></a>
+        <a href="../index.html" class="site" name="Site do pygame" target="_blank"><button>Inicio</button></a><br>
+        <a href="#main.py" class="main" name="main"><button>main.py</button></a>
+        <a href="#camera.py" class="camera" name="camera"><button>camera.py</button></a>
+        <a href="#matrix_function.py" class="matrix" name="matrix"><button>matrix_function.py</button></a>
+        <a href="#object_3D.py" class="object" nome="object"><button>object_3D.py</button></a>
+        
+        
+    </div>
+    <h1>3d</h1>
+    <h2>Imagem 3D</h2>
+    <p><strong id="main.py">main.py</strong></p>
+    <a href="#secao1" class="secao1">topo</a>
+
+   
+    
+    <pre class="cod">
+        
+        <code>
+            import pygame as pg
+            from object_3D import *
+            from camera import *
+            from object_3D import *
+            from projection import *
+            
+            class SoftwareRender:
+            def __init__(self):
+            pg.init()
+            self.RES = self.WIDTH, self.HEIGHT = 1000,700
+            self.H_WIDTH, self.H_HEIGHT = self.WIDTH // 2, self.HEIGHT // 2
+            self.FPS = 60
+            self.screen = pg.display.set_mode(self.RES)
+            self.clock = pg.time.Clock()
+            self.create_objects()#após criar o main (a janela)
+            
+            def create_objects(self):#após criar o main (a janela)
+            self.camera = Camera(self, [0.5, 1, -4])
+            self.projection = Projection(self)
+            self.object = Object3D(self)
+            self.object.translate([0.2, 0.4, 0.2])
+            #self.object.rotate_y(math.pi / 6)(changed the command)
+            self.axes = Axes(self)
+            self.axes.translate([0.7, 0.9, 0.7])
+            self.world_exes = Axes(self)
+            self.world_exes.movement_flag = False
+            self.world_exes.scale(2.5)
+            self.world_exes.translate([0.0001, 0.0001, 0.0001])
+            
+            
+            
+            def draw(self):
+            self.screen.fill(pg.Color('darkslategray'))
+            self.world_exes.draw()
+            self.axes.draw()
+            self.object.draw()
+            
+            
+            
+            def run(self):
+            while True:
+            self.draw()
+            self.camera.control()#Trabalhando com a movimentação da imagem.
+            [exit()for i in pg.event.get() if i.type == pg.QUIT]
+            pg.display.set_caption(str(self.clock.get_fps()))
+            pg.display.flip()
+            self.clock.tick(self.FPS)
+            
+            if __name__ == '__main__':
+            app = SoftwareRender()
+            app.run()
+        </code>
+    </pre>
+    <p><strong id="camera.py">camera.py</strong></p>
+    <a href="#secao1" class="secao1">topo</a>
+    <pre class="cod">
+        <code>
+            import pygame as pg
+            from matrix_function import *
+            
+            class Camera:
+            def __init__(self,render,position):
+            self.render = render
+            self.position = np.array([*position, 1.0])
+            self.forward = np.array([0,0,1,1])
+            self.up = np.array([0,1,0,1])
+            self.right = np.array([1,0,0,1])
+            self.h_fov = math.pi / 3
+            self.v_fov = self.h_fov * (render.HEIGHT / render.WIDTH)
+            self.near_plane = 0.1
+            self.far_plane = 100
+            #Trabalhando a movimentaçao da imagem.
+            self.moving_speed = 0.02
+            self.rotation_apeed = 0.01
+            
+            def control(self):
+            key = pg.key.get_pressed()
+            if key[pg.K_a]:
+            self.position -= self.right * self.moving_speed
+            if key[pg.K_d]:
+            self.position += self.right * self.moving_speed
+            if key[pg.K_w]:
+            self.position += self.forward * self.moving_speed
+            if key[pg.K_s]:
+            self.position -= self.forward * self.moving_speed
+            if key[pg.K_q]:
+            self.position += self.up * self.moving_speed
+            if key[pg.K_e]:
+            self.position -= self.up * self.moving_speed
+            
+            #Trabalhando com rotaçao.
+            if key[pg.K_LEFT]:
+            self.camera_yaw(-self.rotation_apeed)
+            if key[pg.K_RIGHT]:
+            self.camera_yaw(self.rotation_apeed)
+            if key[pg.K_UP]:
+            self.camera_pich(-self.rotation_apeed)
+            if key[pg.K_DOWN]:
+            self.camera_pich(self.rotation_apeed)
+            
+            def camera_yaw(self, angle):
+            rotate = rotate_y(angle)
+            self.forward = self.forward @ rotate
+            self.right = self.rigth @ rotate
+            self.up = self.up @ rotate
+            
+            def camera_pich(self, angle):
+            rotate = rotate_y(angle)
+            self.forward = self.forward @ rotate
+            self.right = self.rigth @ rotate
+            self.up = self.up @ rotate
+            
+            def translate_matrix(self):
+            x,y,z,w = self.position
+            return np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 1],
+            [0, 0, 1, 0],
+            [-x, -y, -z, 1]
+            ])
+            
+            def rotate_matrix(self):
+            rx,ry,rz,w = self.right
+            fx,fy,fz,w = self.forward
+            ux,uy,uz,w = self.up
+            return np.array([
+            [rx,ux,fx, 0],
+            [ry,uy,fy, 0],
+            [rz,uz,fz, 0],
+            [0, 0, 0, 1]
+            ])
+            def camera_matrix(self):
+            return self.translate_matrix() @ self.rotate_matrix()
+        </code>
+    </pre>
+    <p><strong id="matrix_function.py">matrix_function.py</strong></p>
+    <a href="#secao1" class="secao1">topo</a>
+    <pre class="cod">
+        <code>
+            import math
+            import numpy as np # type: ignore
+            
+            def translate(pos):
+            tx,ty,tz = pos
+            return np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [tx, ty, tz, 1]
+            ])
+            
+            def rotate_x(a):
+            return np.array([
+            [1, 0, 0, 0],
+            [0, math.cos(a), math.sin(a), 0],
+            [0, -math.sin(a), math.cos(a), 0],
+            [0, 0, 0, 1]
+            ])
+            
+            def rotate_y(a):
+            return np.array([
+            [ math.cos(a), 0, -math.sin(a), 0],
+            [0, 1, 0, 0],
+            [math.sin(a), 0, math.cos(a), 0],
+            [0, 0, 0, 1]
+            ])
+            
+            def rotate_z(a):
+            return np.array([
+            [math.cos(a), math.sin(a), 0 ,0],
+            [-math.sin(a), math.cos(a), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+            ])
+            
+            def scale(n):
+            return np.array([
+            [n, 0, 0, 0],
+            [0, n, 0, 0],
+            [0, 0, n, 0],
+            [0, 0, 0, 1],
+            ])
+        </code>
+    </pre>
+    <p><strong id="object_3D.py">object_3D.py</strong></p>
+    <a href="#secao1" class="secao1">topo</a>
+    <pre class="cod">
+        <code>
+            import pygame as pg
+            from matrix_function import *
+            from main import *
+            
+            class Object3D:
+            def __init__(self,render):
+            self.render = render
+            self.vertexes = np.array([(0,0,0,1),(0,1,0,1),(1,1,0,1),(1,0,0,1),
+            (0,0,1,1),(0,1,1,1),(1,1,1,1),(1,0,1,1)])
+            self.faces = np.array([(0,1,2,3),(4,5,6,7),(0,4,5,1),(2,3,7,6),(1,2,6,5),(0,3,7,4)])
+            #change:
+            self.font = pg.font.SysFont('Arial', 30, bold=True)
+            self.color_faces = [(pg.Color('orange'), face)for face in self.faces]
+            self.movement_flag, self.draw_vertexes = True, True
+            self.label = ''
+            #apos terminar o comando abaixo:
+            def draw(self):
+            self.screen_projection()
+            self.movement()
+            
+            def movement(self):
+            if self.movement_flag:
+            self.rotate_y(pg.time.get_ticks() % 0.005)
+            #_____________________________________________________
+            def screen_projection(self):# colocado apos ter criado camera.py
+            vertexes = self.vertexes @ self.render.camera.camera_matrix()
+            vertexes = vertexes @ self.render.projection.projection_matrix
+            vertexes /= vertexes[:, -1].reshape(-1, 1)
+            vertexes[(vertexes > 4) | (vertexes < -4)]=0 #Increase the clipping space by 4 times. #criado após ter acrescentado
+                comandos no arquivo projection. vertexes=vertexes @ self.render.projection.to_screen_matrix vertexes=vertexes[:, :2]
+                for index, color_face in enumerate(self.color_faces): color, face=color_face polygon=vertexes[face] if not
+                np.any((polygon==self.render.H_WIDTH) | (polygon==self.render.H_HEIGHT)): pg.draw.polygon(self.render.screen, color,
+                polygon, 3) if self.label: text=self.font.render(self.label[index], True, pg.Color('white'))
+                self.render.screen.blit(text, polygon[-1]) if self.draw_vertexes: for vertex in vertexes: if not
+                np.any((vertex==self.render.H_WIDTH) | (vertex==self.render.H_HEIGHT)): pg.draw.circle(self.render.screen,
+                pg.Color('white'), vertex, 6) #__________________________________________________________________ def
+                translate(self, pos): self.vertexes=self.vertexes @ translate(pos) def scale(self, scale_to):
+                self.vertexes=self.vertexes @ scale(scale_to) def rotate_x(self, angle): self.vertexes=self.vertexes @
+                rotate_x(angle) def rotate_y(self, angle): self.vertexes=self.vertexes @ rotate_y(angle) def rotate_z(self, angle):
+                self.vertexes=self.vertexes @ rotate_z(angle) class Axes(Object3D): def __init__(self, render):
+                super().__init__(render) self.vertexes=np.array([(0,0,0,1),(1,0,0,1),(0,1,0,1),(0,0,1,1)])
+                self.faces=np.array([(0,1),(0,2),(0,3)]) self.colors=[pg.Color('red'), pg.Color('green'), pg.Color('blue')]
+                self.color_faces=[(color, face)for color, face in zip(self.colors, self.faces)] self.draw_vertexes=False
+                self.label='XYZ'
+        </code>
+    </pre>
+    <p><strong id="projection.py">projection.py</strong></p>
+    <a href="#secao1" class="secao1">topo</a>
+    <pre class="cod">
+        <code>
+            import math
+            import numpy as np
+            
+            class Projection:
+            def __init__(self,render):
+            NEAR = render.camera.near_plane
+            FAR = render.camera.far_plane
+            RIGHT = math.tan(render.camera.h_fov / 2)
+            LEFT = -RIGHT
+            TOP = math.tan(render.camera.v_fov / 2)
+            BOTTOM = -TOP
+            
+            m00 = 2 / (RIGHT - LEFT)
+            m11 = 2 / (TOP - BOTTOM)
+            m22 = (FAR + NEAR) / (FAR - NEAR)
+            m32 = -2 * NEAR * FAR / (FAR - NEAR)
+            self.projection_matrix = np.array([
+            [m00, 0, 0, 0],
+            [0, m11, 0, 0],
+            [0, 0, m22, 1],
+            [0, 0, m32, 0],
+            ])
+            
+            HW, HH = render.H_WIDTH, render.H_HEIGHT#colocado apos ter colocado o comando no arquivo object_3D.
+            self.to_screen_matrix = np.array([
+            [HW, 0, 0, 0],
+            [0, -HH, 0, 0],
+            [0, 0, 1, 0],
+            [HW, HH, 0, 1],
+            ])
+        </code>
+    </pre>
+    <div class="botao">
+        <a href="file:///home/luciano/Documentos/repositorios-github/3D-Image/copia%20sem%20venv/" class="pasta-pai"
+        target="_blank"><button>Pasta pai</button></a>
+        
+        <a href="https://www.pygame.org/wiki/Compilation" class="site"name="Site do pygame" target="_blank"><button>pygame</button></a>
+        <a href="../index.html" class="inicio" name="inicio"
+        target="_blank"><button>Inicio</button></a><br>
+        
+        <a href="#main.py" class="main" name="main"><button>main.py</button></a>
+        <a href="#camera.py" class="camera" name="camera"><button>camera.py</button></a>
+        <a href="#matrix_function.py" class="matrix" name="matrix"><button>matrix_function.py</button></a>
+        <a href="#object_3D.py" class="object"nome="object"><button>object_3D.py</button></a>
+        <a href="#secao1" class="secao1" nome="secao1"><button>Inicio</button></a>
+        
+    </div>
+</body>
+</html>
